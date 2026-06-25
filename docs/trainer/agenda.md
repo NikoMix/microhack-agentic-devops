@@ -6,7 +6,7 @@ as stretch) and a **Short Day** (00–05, skip 06). Times assume a 09:00 start.
 ## Full day (default)
 
 | Start | End | Block | Ref-arch | Type | Owner |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | 09:00 | 09:30 | Welcome, scenario, platform tour | — | Plenary | Lead |
 | 09:30 | 10:15 | **Challenge 00 — Platform foundation + OIDC** | 1 | Lab | All |
 | 10:15 | 11:15 | **Challenge 01 — Azure DevOps → GitHub migration** | 4 | Lab | All |
@@ -26,7 +26,7 @@ Drop Challenge 06 and give the recovered time to 03–05. Use when attendees lac
 features — Challenge 01 can run in "guided demo" mode while attendees follow along on the provided sample export.
 
 | Block | Adjustment |
-|---|---|
+| --- | --- |
 | Challenge 01 | Run as facilitator-led demo + a 20-min attendee mini-lab on Pipelines→Actions translation |
 | Challenge 06 | Cut; mention as "take-home" with the published solution branch |
 

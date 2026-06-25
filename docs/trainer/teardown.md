@@ -42,7 +42,7 @@ entries should be deregistered by the script or removed manually.
 ## Per-resource cost notes (why these SKUs)
 
 | Resource | SKU chosen | Why | Idle cost |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Azure Container Apps | Consumption | Scales to zero | ~£0 when idle |
 | Azure Container Registry | Basic | Cheapest registry that supports tasks | small/day |
 | Key Vault | Standard | No HSM needed for the lab | negligible |

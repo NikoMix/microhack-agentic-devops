@@ -9,7 +9,7 @@ them in order — Challenge 00 establishes the OIDC + dev-container foundation e
 ## The path
 
 | # | Challenge | Duration | Reference architecture | You will… |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 00 | [Platform foundation + OIDC](challenge-00-foundation/) | 45m | 1 — Control plane | Stand up the dev container, wire **GitHub ↔ Entra ID ↔ Azure** with **OIDC** (no secrets), and bootstrap a landing zone |
 | 01 | [Azure DevOps → GitHub migration](challenge-01-migration/) | 60m | 4 — Migration topology | Migrate Repos with **GitHub Enterprise Importer**, translate **Pipelines → Actions** (Copilot-assisted), and move **Boards → Issues** |
 | 02 | [Self-hosted runners on Azure](challenge-02-runners-oidc/) | 45m | 2 — Runners | Deploy **self-hosted Actions runners** (VMSS / ARC on AKS) that authenticate to Azure via **OIDC** |

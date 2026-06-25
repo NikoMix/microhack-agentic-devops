@@ -36,7 +36,7 @@ What they do:
 ### Options
 
 | Bash | PowerShell | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `--resource-group` | `-ResourceGroup` | RG to delete (default `rg-ccmh-lab`) |
 | `--subscription` | `-Subscription` | Target a specific subscription |
 | `--purge` | `-Purge` | Purge soft-deleted Key Vaults / Cognitive Services |
@@ -47,6 +47,6 @@ What they do:
 
 > **Don't forget the runners.** The VMSS/ARC infra is deleted with the RG, but you should also **deregister**
 > any self-hosted runners in **GitHub → Settings → Actions → Runners**. The script reminds you at the end.
-
+>
 > **Soft delete matters.** Key Vault and Cognitive Services keep paying retention after a plain RG delete. Use
 > `--purge` to stop that and free the names immediately.

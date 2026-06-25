@@ -41,7 +41,7 @@ What it does (idempotently):
 ### Key options
 
 | Bash | PowerShell | Default | Purpose |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `--repo` | `-Repo` | *(required)* | `owner/repo` the federated credentials trust |
 | `--app-name` | `-AppName` | `id-ccmh-lab` | Entra app registration name |
 | `--resource-group` | `-ResourceGroup` | `rg-ccmh-lab` | Scope for the role assignment |

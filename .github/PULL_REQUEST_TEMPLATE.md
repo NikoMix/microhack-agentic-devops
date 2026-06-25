@@ -3,11 +3,13 @@
 <!-- Summary of the change and which challenge / reference architecture it serves. -->
 
 ## Workstream
+
 - [ ] Foundation/trainer  - [ ] Infra (B)  - [ ] Legacy+Migration (C)  - [ ] Secure SDLC (D)  - [ ] Agent+MCP (E)  - [ ] Agentic pipeline (F)
 
 Closes # <!-- issue -->
 
 ## Checklist
+
 - [ ] Only edits paths owned by this workstream (see `plan.md` ownership table)
 - [ ] Builds/lints/tests pass locally (`dotnet`/`ruff`+`mypy`+`pytest`/`az bicep lint`/`actionlint`)
 - [ ] No secrets committed; uses OIDC / `DefaultAzureCredential` / Key Vault

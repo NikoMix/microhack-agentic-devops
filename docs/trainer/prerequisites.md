@@ -6,7 +6,7 @@ trainer's pre-flight. The goal: **zero setup time lost on the day**.
 ## Attendee prerequisites
 
 | Requirement | Detail |
-|---|---|
+| --- | --- |
 | GitHub account | With **GitHub Copilot** enabled (Business/Enterprise recommended for agents + Code Security demos) |
 | Azure subscription | **Owner** on a subscription or resource group (Contributor + User Access Administrator also works) |
 | Region access | Ability to deploy in **Sweden Central** (best Azure AI Foundry model availability), or `West Europe` / `East US 2` |
@@ -50,7 +50,7 @@ Register these once per subscription (the bootstrap script does this for you):
 ## Inference options & when to use them
 
 | Provider | Setup cost | Use during | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **GitHub Models** | None (just a GitHub token) | Challenges 04–05 dev/iteration | `models.github.ai/inference`, model `openai/gpt-4o-mini`. Zero Azure spend. |
 | **Azure OpenAI** | A deployment in your sub | Challenge 05 deploy | Keyless via Entra ID; lowest-latency in-region |
 | **Azure AI Foundry** | A Foundry project + deployment | Challenge 05 deploy / agent hosting | Showcases Foundry Agent Service + tracing |

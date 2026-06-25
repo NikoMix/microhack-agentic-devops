@@ -15,7 +15,7 @@ Everything you need to **run** the Contoso Commerce Agentic DevOps MicroHack for
 ## Trainer kit contents
 
 | File | Use |
-|---|---|
+| --- | --- |
 | [`facilitator-guide.md`](facilitator-guide.md) | Minute-by-minute delivery playbook, room setup, recovery tactics |
 | [`agenda.md`](agenda.md) | The timetable + the two delivery variants (full day / short day) |
 | [`prerequisites.md`](prerequisites.md) | Attendee + trainer pre-flight, subscriptions, quotas, cost guardrails |
@@ -39,7 +39,7 @@ outcomes (≥ 80% of attendees reach each challenge's success criteria).
 ## Roles in the room
 
 | Role | Ratio | Responsibility |
-|---|---|---|
+| --- | --- | --- |
 | Lead facilitator | 1 | Pace, demos, transitions, time-boxing |
 | Floating coach | 1 per ~6 attendees | Unblock, pair-debug, watch the chat |
 | Producer (optional) | 1 | Manages the slide deck, timer, and links; handles logistics |

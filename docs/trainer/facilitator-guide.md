@@ -4,7 +4,7 @@ A practical, minute-by-minute playbook for delivering the Contoso Commerce Agent
 
 ## Before the day (T-minus checklist)
 
-**T-1 week**
+### T-1 week
 
 - [ ] Confirm every attendee has: a GitHub account with **Copilot** enabled, and an **Azure subscription** with
       Owner on at least one resource group. (See [`prerequisites.md`](prerequisites.md).)
@@ -13,14 +13,14 @@ A practical, minute-by-minute playbook for delivering the Contoso Commerce Agent
 - [ ] Decide the inference path for the room (default **GitHub Models** for zero Azure spend during dev; switch to
       **Azure OpenAI / Foundry** for Challenge 05's deploy).
 
-**T-1 day**
+### T-1 day
 
 - [ ] Re-run Challenges 00–06 yourself end-to-end. Note any UI/CLI drift in the matching `coach-notes.md`.
 - [ ] Pre-create one **solution Codespace** per challenge so you can demo instantly.
 - [ ] Load the [slide deck](slides-outline.md), a visible **countdown timer**, and the shared chat/Q&A channel.
 - [ ] Pre-stage a **shared Azure region + naming** convention so resource names don't collide (`ccmh` prefix).
 
-**T-30 min**
+### T-30 min
 
 - [ ] Open the room Codespace, `az login`, `gh auth status` — confirm green on the projector.
 - [ ] Post the repo link + today's checkpoints in the chat.
@@ -50,7 +50,7 @@ Per-challenge teaching points, pitfalls, and "what good looks like" are in each
 [`coach-notes.md`](../challenges/). Highlights:
 
 | Challenge | Watch for | Fast unblock |
-|---|---|---|
+| --- | --- | --- |
 | 00 Foundation | OIDC federated-credential subject typos; wrong subscription selected | Re-run `setup-oidc.sh`; `az account set` |
 | 01 Migration | `gh gei` auth/PAT scopes; ADO org access | Use the dry-run; fall back to repo export ZIP |
 | 02 Runners | Runner registration token; VMSS/ARC networking egress | Use the provided Bicep + registration script |

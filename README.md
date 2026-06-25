@@ -45,7 +45,7 @@ flowchart LR
 ## 🧱 What you build — the six B.1.1 reference architectures
 
 | # | Reference architecture | You will… |
-|---|---|---|
+| --- | --- | --- |
 | 1 | GHEC + Entra ID + Azure landing zone | Stand up the control plane, dev container, and **GitHub OIDC** to Azure (no secrets) |
 | 2 | Self-hosted runners on Azure (VMSS/ARC) | Run Actions on your own Azure compute, federated with OIDC |
 | 3 | Copilot coding agent + custom **MCP** servers | Drive delivery with Copilot agents/skills and a custom Azure-facing MCP server |
@@ -62,7 +62,7 @@ variable. No image generation; chat/triage only.
 ## 🗓️ Agenda (1 day)
 
 | Time | Module | Ref-arch | Format |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 09:00 | Welcome, scenario, platform tour | — | Talk |
 | 09:30 | **Challenge 00** — Platform foundation + OIDC | 1 | Lab |
 | 10:15 | **Challenge 01** — Azure DevOps → GitHub migration | 4 | Lab |

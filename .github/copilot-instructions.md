@@ -5,11 +5,13 @@ This repository is a **1-day, classroom-led, Train-the-Trainer microhack** that 
 Agentic DevOps Advanced Specialization. Keep everything **technical, hands-on, and reproducible**.
 
 ## Scenario
+
 **Contoso Commerce** runs a legacy **.NET Orders API** on **Azure DevOps** (Repos/Pipelines/Boards). Across the
 day, attendees **migrate it to GitHub**, **modernize it on Azure**, **secure the SDLC**, and add a new
 **Python "Order Support / Triage" agent** built with **modular inference**.
 
 ## Golden rules
+
 - **Security first:** never hardcode secrets/keys. Use **Entra ID + `DefaultAzureCredential`**, **Key Vault**,
   and **GitHub OIDC** (federated credentials) — no long-lived cloud secrets in Actions.
 - **Latest stable, zero known vulns:** keep NuGet/PyPI/npm/Actions current. CI runs
@@ -20,8 +22,9 @@ day, attendees **migrate it to GitHub**, **modernize it on Azure**, **secure the
   (`foundry` | `azure_openai` | `github_models`). Never call a single provider SDK directly from feature code.
 
 ## Tech & quality standards
+
 | Area | Standard |
-|---|---|
+| --- | --- |
 | .NET | `net10.0`, file-scoped namespaces, nullable enabled, warnings-as-errors, `dotnet format`, xUnit, Central Package Management |
 | Python | 3.12, `uv`, `ruff` (lint+format), `mypy --strict`, `pytest`, `pyproject.toml` |
 | IaC | **Bicep AVM modules** (`br/public:avm/res/...`), `az bicep lint` clean, `what-if` before deploy |
@@ -29,7 +32,8 @@ day, attendees **migrate it to GitHub**, **modernize it on Azure**, **secure the
 | Docs | Each `docs/challenges/challenge-XX-*/` has `README.md` (student) + `coach-notes.md` (trainer) |
 
 ## Modular inference env contract
-```
+
+```ini
 INFERENCE_PROVIDER=github_models            # foundry | azure_openai | github_models
 GITHUB_MODELS_ENDPOINT=https://models.github.ai/inference
 GITHUB_MODELS_MODEL=openai/gpt-4o-mini
@@ -41,11 +45,13 @@ AZURE_AI_FOUNDRY_CHAT_DEPLOYMENT=gpt-4o-mini
 ```
 
 ## Azure naming (lab)
+
 RG `rg-ccmh-lab` · prefix `ccmh` · region `swedencentral` (alts `westeurope`, `eastus2`) · ACR `crccmhlab<rand>` ·
 ACA env `cae-ccmh-lab` · Key Vault `kv-ccmh-<rand>` · Log Analytics `log-ccmh-lab` · App Insights `appi-ccmh-lab` ·
 Foundry `aif-ccmh-lab`/`proj-ccmh-lab` · managed identity `id-ccmh-lab`.
 
 ## Where things live
+
 - `src/legacy-orders-api/` — .NET Orders API (migration subject)
 - `src/order-support-agent/` — Python agent (Microsoft Agent Framework + modular inference)
 - `mcp/` — custom MCP server(s)
