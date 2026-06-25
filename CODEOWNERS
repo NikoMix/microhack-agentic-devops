@@ -1,0 +1,20 @@
+# CODEOWNERS — Contoso Commerce MicroHack
+# Default owner for everything in the repo.
+*       @NikoMix
+
+# Trainer-facing content
+/docs/trainer/                      @NikoMix
+/docs/challenges/                   @NikoMix
+
+# Platform / infrastructure
+/infra/                             @NikoMix
+/scripts/                           @NikoMix
+
+# Application code
+/src/legacy-orders-api/             @NikoMix
+/src/order-support-agent/           @NikoMix
+/mcp/                               @NikoMix
+
+# Delivery automation
+/.github/workflows/                 @NikoMix
+/.github/agents/                    @NikoMix

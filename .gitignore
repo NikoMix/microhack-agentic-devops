@@ -1,0 +1,66 @@
+# --- Secrets & local env (NEVER commit) ---
+*.env
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.key
+azureauth.json
+**/local.settings.json
+.azure/
+
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+artifacts/
+[Tt]est[Rr]esults/
+*.trx
+coverage*.xml
+coverage*.json
+.vs/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env-py/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+.uv/
+
+# --- Node / docs tooling ---
+node_modules/
+.astro/
+.cache/
+site/
+_site/
+
+# --- Bicep / IaC ---
+*.azrm.json
+.bicep/
+**/main.parameters.local.json
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# --- Editors / OS ---
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Tooling output ---
+*.log
+.sarif
+*.sarif
+trace.json
+trace.json.gz

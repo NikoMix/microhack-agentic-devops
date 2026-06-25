@@ -1,0 +1,52 @@
+name: "Challenge / workstream task"
+description: "Track a build task for the Agentic DevOps MicroHack"
+labels: ["type:challenge"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this to track a challenge or workstream task. Keep scope inside the owning workstream's
+        paths (see `plan.md`). Link the parent epic.
+  - type: dropdown
+    id: workstream
+    attributes:
+      label: Workstream
+      options:
+        - "Foundation / trainer"
+        - "B — Platform & Infra"
+        - "C — Legacy app + Migration"
+        - "D — Secure SDLC"
+        - "E — Agent service + MCP"
+        - "F — Agentic delivery pipeline"
+    validations:
+      required: true
+  - type: input
+    id: refarch
+    attributes:
+      label: Reference architecture (B.1.1)
+      placeholder: "e.g. #2 Self-hosted runners on Azure + OIDC"
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome / definition of done
+      description: What must exist and pass (build, lint, tests, deploy, docs) for this to be done.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      value: |
+        - [ ] Implementation
+        - [ ] Student `README.md`
+        - [ ] Trainer `coach-notes.md`
+        - [ ] Lint/build/test green
+        - [ ] Latest deps, 0 vulns
+  - type: checkboxes
+    id: guardrails
+    attributes:
+      label: Guardrails
+      options:
+        - label: No secrets; uses OIDC / DefaultAzureCredential / Key Vault
+        - label: AI via modular-inference factory only
+        - label: Cost-optimized Azure + covered by teardown
