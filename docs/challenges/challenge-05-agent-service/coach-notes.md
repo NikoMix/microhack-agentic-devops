@@ -37,7 +37,7 @@ Trainer companion for [Build & deploy the Order Support agent](README.md).
 | `/triage` 503 | Hitting it before readiness | Wait for `/readyz` to return 200, then call `/triage`. |
 | No traces in App Insights | Connection string unset, or `ENABLE_AZURE_MONITOR=false` | Set `APPLICATIONINSIGHTS_CONNECTION_STRING`; both must be on (`azure_monitor_enabled`). |
 | Deploy fails at login | Federated credential subject mismatch | Federate `repo:NikoMix/microhack-agentic-devops:environment:lab`; set the `AZURE_*` Variables. |
-| Deploy fails at `containerapp update` | App/RG/ACR names don't match infra | Align `AGENT_CONTAINERAPP`/`MCP_CONTAINERAPP`/`RESOURCE_GROUP`/`ACR_NAME` with Workstream-B outputs. |
+| Deploy fails at `containerapp update` | App/RG/ACR names don't match infra | Align `AGENT_CONTAINERAPP`/`MCP_CONTAINERAPP`/`AZURE_RESOURCE_GROUP`/`ACR_NAME` with Workstream-B outputs. |
 
 ## Discussion questions
 
