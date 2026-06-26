@@ -1,0 +1,153 @@
+# Reusable modular-inference engine for the agentic pipeline.
+#
+# This is the CI analog of the Python `InferenceClient` provider factory in Workstream E
+# (`src/order-support-agent/`): one interface, three providers selected by `INFERENCE_PROVIDER`
+# (`github_models` | `azure_openai` | `foundry`). Callers pass a system + user prompt and read back
+# the model's `response`. No provider SDK is called directly from a feature workflow — they all go
+# through here, exactly as the golden rules require.
+#
+# Auth is keyless:
+#   - github_models -> the job's `GITHUB_TOKEN` with `models: read` (zero Azure cost, zero secrets).
+#   - azure_openai / foundry -> GitHub OIDC -> `azure/login` -> a short-lived Entra token. No secrets.
+#
+# Callers MUST grant `models: read` (always) and, only when targeting an Azure provider,
+# `id-token: write`. Configure providers with repository *variables* (never secrets):
+#   INFERENCE_PROVIDER, GH_MODELS_MODEL  (Actions forbids GITHUB_-prefixed variables, so the app's
+#   GITHUB_MODELS_MODEL env maps to the GH_MODELS_MODEL repository variable here),
+#   AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_CHAT_DEPLOYMENT,
+#   AZURE_AI_FOUNDRY_PROJECT_ENDPOINT, AZURE_AI_FOUNDRY_CHAT_DEPLOYMENT,
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID.
+name: agentic-inference
+
+on:
+  workflow_call:
+    inputs:
+      system-prompt:
+        description: System prompt that defines the agent's behavior and output contract.
+        required: true
+        type: string
+      prompt:
+        description: User prompt (the task and its context).
+        required: true
+        type: string
+      provider:
+        description: Override the provider (github_models | azure_openai | foundry). Empty = repo default.
+        required: false
+        type: string
+        default: ''
+      model:
+        description: Override the model / deployment. Empty = provider default.
+        required: false
+        type: string
+        default: ''
+      max-completion-tokens:
+        description: Maximum number of tokens to generate.
+        required: false
+        type: string
+        default: '1200'
+      temperature:
+        description: Sampling temperature (0-1).
+        required: false
+        type: string
+        default: '0.2'
+    outputs:
+      response:
+        description: The model's text response.
+        value: ${{ jobs.infer.outputs.response }}
+
+permissions: {}
+
+jobs:
+  infer:
+    name: Inference (${{ inputs.provider }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      models: read
+      id-token: write
+    outputs:
+      response: ${{ steps.gh.outputs.response || steps.azure.outputs.response }}
+    steps:
+      - name: Resolve provider, endpoint and model
+        env:
+          IN_PROVIDER: ${{ inputs.provider }}
+          IN_MODEL: ${{ inputs.model }}
+          VAR_INFERENCE_PROVIDER: ${{ vars.INFERENCE_PROVIDER }}
+          VAR_GH_MODEL: ${{ vars.GH_MODELS_MODEL }}
+          VAR_AOAI_ENDPOINT: ${{ vars.AZURE_OPENAI_ENDPOINT }}
+          VAR_AOAI_DEPLOYMENT: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT }}
+          VAR_FOUNDRY_ENDPOINT: ${{ vars.AZURE_AI_FOUNDRY_PROJECT_ENDPOINT }}
+          VAR_FOUNDRY_DEPLOYMENT: ${{ vars.AZURE_AI_FOUNDRY_CHAT_DEPLOYMENT }}
+        run: |
+          set -euo pipefail
+          provider="${IN_PROVIDER:-}"
+          [ -n "$provider" ] || provider="${VAR_INFERENCE_PROVIDER:-github_models}"
+          case "$provider" in
+            github_models)
+              endpoint="https://models.github.ai/inference"
+              model="${IN_MODEL:-${VAR_GH_MODEL:-openai/gpt-4o-mini}}"
+              ;;
+            azure_openai)
+              endpoint="${VAR_AOAI_ENDPOINT:-}"
+              model="${IN_MODEL:-${VAR_AOAI_DEPLOYMENT:-gpt-4o-mini}}"
+              ;;
+            foundry)
+              endpoint="${VAR_FOUNDRY_ENDPOINT:-}"
+              model="${IN_MODEL:-${VAR_FOUNDRY_DEPLOYMENT:-gpt-4o-mini}}"
+              ;;
+            *)
+              echo "::error::Unsupported INFERENCE_PROVIDER '$provider' (expected github_models | azure_openai | foundry)"
+              exit 1
+              ;;
+          esac
+          if [ "$provider" != "github_models" ] && [ -z "$endpoint" ]; then
+            echo "::error::Provider '$provider' selected but its endpoint variable is not configured."
+            exit 1
+          fi
+          {
+            echo "PROVIDER=$provider"
+            echo "ENDPOINT=$endpoint"
+            echo "MODEL=$model"
+          } >> "$GITHUB_ENV"
+          echo "Resolved provider=$provider model=$model"
+
+      - name: Inference (GitHub Models)
+        id: gh
+        if: env.PROVIDER == 'github_models'
+        uses: actions/ai-inference@a7805884c80886efc241e94a5351df715968a0ad # v2.1.1
+        with:
+          system-prompt: ${{ inputs.system-prompt }}
+          prompt: ${{ inputs.prompt }}
+          model: ${{ env.MODEL }}
+          endpoint: ${{ env.ENDPOINT }}
+          max-completion-tokens: ${{ inputs.max-completion-tokens }}
+          temperature: ${{ inputs.temperature }}
+
+      - name: Azure login (OIDC, keyless)
+        if: env.PROVIDER != 'github_models'
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Mint short-lived Entra token
+        if: env.PROVIDER != 'github_models'
+        run: |
+          set -euo pipefail
+          token="$(az account get-access-token --resource https://cognitiveservices.azure.com --query accessToken -o tsv)"
+          echo "::add-mask::$token"
+          echo "INFERENCE_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Inference (Azure OpenAI / Foundry)
+        id: azure
+        if: env.PROVIDER != 'github_models'
+        uses: actions/ai-inference@a7805884c80886efc241e94a5351df715968a0ad # v2.1.1
+        with:
+          system-prompt: ${{ inputs.system-prompt }}
+          prompt: ${{ inputs.prompt }}
+          model: ${{ env.MODEL }}
+          endpoint: ${{ env.ENDPOINT }}
+          token: ${{ env.INFERENCE_TOKEN }}
+          max-completion-tokens: ${{ inputs.max-completion-tokens }}
+          temperature: ${{ inputs.temperature }}
