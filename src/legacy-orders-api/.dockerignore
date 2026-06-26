@@ -1,0 +1,18 @@
+# Build artifacts and local-only files that must never enter the image build context.
+**/bin/
+**/obj/
+**/out/
+**/.vs/
+**/.vscode/
+**/*.user
+**/*.suo
+
+# Tests are not needed to build the runtime image.
+tests/
+
+# Container and SCM metadata.
+Dockerfile
+.dockerignore
+.git/
+.gitignore
+**/*.md
