@@ -1,0 +1,12 @@
+# Build output and local databases for the Orders API.
+bin/
+obj/
+*.user
+*.db
+*.db-shm
+*.db-wal
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.cobertura.xml

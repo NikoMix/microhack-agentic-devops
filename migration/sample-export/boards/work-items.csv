@@ -1,0 +1,11 @@
+ID,Work Item Type,Title,State,Assigned To,Tags,Area Path,Iteration Path,Parent
+101,Epic,Modernize the Contoso Orders platform,Active,Dana Architect <dana@contoso.example>,modernization; orders,Contoso\Orders,Contoso\Q3,
+102,Feature,Orders REST API (CRUD),Active,Lee Backend <lee@contoso.example>,api; dotnet,Contoso\Orders,Contoso\Q3,101
+103,User Story,"As a client app, I can create an order",Closed,Lee Backend <lee@contoso.example>,api,Contoso\Orders,Contoso\Q2,102
+104,User Story,"As a client app, I can retrieve an order by id",Closed,Lee Backend <lee@contoso.example>,api,Contoso\Orders,Contoso\Q2,102
+105,User Story,"As a client app, I can update and cancel an order",Active,Lee Backend <lee@contoso.example>,api,Contoso\Orders,Contoso\Q3,102
+106,Bug,Order total ignores per-line discounts,Active,Lee Backend <lee@contoso.example>,bug; pricing,Contoso\Orders,Contoso\Q3,102
+107,Feature,Containerize and deploy to Azure Container Apps,New,Sam Platform <sam@contoso.example>,containers; azure,Contoso\Orders,Contoso\Q3,101
+108,User Story,Expose a health endpoint for container probes,Closed,Sam Platform <sam@contoso.example>,observability,Contoso\Orders,Contoso\Q2,107
+109,Task,Add a Dockerfile for Container Apps,Done,Sam Platform <sam@contoso.example>,containers,Contoso\Orders,Contoso\Q2,107
+110,Bug,Negative line quantity is accepted,New,Lee Backend <lee@contoso.example>,bug; validation,Contoso\Orders,Contoso\Q3,102

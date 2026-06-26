@@ -1,0 +1,122 @@
+[
+  {
+    "id": 101,
+    "workItemType": "Epic",
+    "title": "Modernize the Contoso Orders platform",
+    "state": "Active",
+    "assignedTo": "Dana Architect <dana@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q3",
+    "tags": ["modernization", "orders"],
+    "parent": null,
+    "description": "Move the legacy Orders service off Azure DevOps and onto GitHub + Azure Container Apps, with OIDC and no stored secrets."
+  },
+  {
+    "id": 102,
+    "workItemType": "Feature",
+    "title": "Orders REST API (CRUD)",
+    "state": "Active",
+    "assignedTo": "Lee Backend <lee@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q3",
+    "tags": ["api", "dotnet"],
+    "parent": 101,
+    "description": "Expose create/read/update/delete for orders over HTTP with EF Core persistence."
+  },
+  {
+    "id": 103,
+    "workItemType": "User Story",
+    "title": "As a client app, I can create an order",
+    "state": "Closed",
+    "assignedTo": "Lee Backend <lee@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q2",
+    "tags": ["api"],
+    "parent": 102,
+    "description": "POST /orders accepts a customer and line items and returns the created order with a generated id."
+  },
+  {
+    "id": 104,
+    "workItemType": "User Story",
+    "title": "As a client app, I can retrieve an order by id",
+    "state": "Closed",
+    "assignedTo": "Lee Backend <lee@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q2",
+    "tags": ["api"],
+    "parent": 102,
+    "description": "GET /orders/{id} returns a single order or 404 when it does not exist."
+  },
+  {
+    "id": 105,
+    "workItemType": "User Story",
+    "title": "As a client app, I can update and cancel an order",
+    "state": "Active",
+    "assignedTo": "Lee Backend <lee@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q3",
+    "tags": ["api"],
+    "parent": 102,
+    "description": "PUT /orders/{id} replaces customer details and line items; DELETE /orders/{id} cancels an order."
+  },
+  {
+    "id": 106,
+    "workItemType": "Bug",
+    "title": "Order total ignores per-line discounts",
+    "state": "Active",
+    "assignedTo": "Lee Backend <lee@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q3",
+    "tags": ["bug", "pricing"],
+    "parent": 102,
+    "description": "The computed order total sums unit price * quantity but never subtracts the line discount."
+  },
+  {
+    "id": 107,
+    "workItemType": "Feature",
+    "title": "Containerize and deploy to Azure Container Apps",
+    "state": "New",
+    "assignedTo": "Sam Platform <sam@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q3",
+    "tags": ["containers", "azure"],
+    "parent": 101,
+    "description": "Build a non-root container image and deploy it to Azure Container Apps using OIDC federation."
+  },
+  {
+    "id": 108,
+    "workItemType": "User Story",
+    "title": "Expose a health endpoint for container probes",
+    "state": "Closed",
+    "assignedTo": "Sam Platform <sam@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q2",
+    "tags": ["observability"],
+    "parent": 107,
+    "description": "GET /health returns 200 with a small JSON payload so Container Apps liveness and readiness probes pass."
+  },
+  {
+    "id": 109,
+    "workItemType": "Task",
+    "title": "Add a Dockerfile for Container Apps",
+    "state": "Done",
+    "assignedTo": "Sam Platform <sam@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q2",
+    "tags": ["containers"],
+    "parent": 107,
+    "description": "Multi-stage build on the .NET SDK image producing a chiseled, non-root runtime image listening on port 8080."
+  },
+  {
+    "id": 110,
+    "workItemType": "Bug",
+    "title": "Negative line quantity is accepted",
+    "state": "New",
+    "assignedTo": "Lee Backend <lee@contoso.example>",
+    "areaPath": "Contoso\\Orders",
+    "iterationPath": "Contoso\\Q3",
+    "tags": ["bug", "validation"],
+    "parent": 102,
+    "description": "Posting an order line with a negative quantity should return 400 but currently persists the line."
+  }
+]
