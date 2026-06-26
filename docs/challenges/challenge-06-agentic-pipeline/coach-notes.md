@@ -126,21 +126,22 @@ merge:
 
 ### Workstream E (#6) — custom MCP server (`/mcp/**`)
 
-Once the Azure-facing MCP server exists, enrich the **on-call** (and optionally **triage**) agent with an
-`mcp-servers` block so it can pull live telemetry. Ready-to-paste frontmatter addition:
+E's custom MCP server (`mcp/contoso-orders-mcp`) ships read-only order/inventory tools. The **on-call**
+agent is already wired to it via an `mcp-servers` block in `oncall-incident.agent.md`, so an incident can be
+correlated with affected orders/SKUs. The exact frontmatter addition:
 
 ```yaml
 mcp-servers:
-  contoso-azure:
-    type: local
-    command: python
-    args: ['-m', 'mcp_contoso_azure']
-    tools: ['get_app_insights_query', 'get_container_app_revisions']
-    env:
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.COPILOT_MCP_AZURE_SUBSCRIPTION_ID }}
+  contoso-orders:
+    type: 'local'
+    command: 'uv'
+    args: ['run', '--project', 'mcp/contoso-orders-mcp', 'contoso-orders-mcp']
+    tools: ['get_order', 'lookup_inventory', 'get_order_history']
 ```
 
-Keep the agent read-only: only expose **read** MCP tools (queries, status), never mutating ones.
+Those tool names must also appear in the agent's top-level `tools:` list as `contoso-orders/*`. Keep the
+agent read-only: only expose **read** MCP tools, never mutating ones. The default offline repository needs
+no secrets; for the live Azure path set `ORDERS_API_BASE_URL` via a `COPILOT_MCP_*` agents variable.
 
 ### Workstream D (#2) — Secure SDLC (`security-*.yml`, Dependabot, CodeQL)
 

@@ -8,14 +8,14 @@
 #
 # Usage:
 #   ./teardown.sh --resource-group rg-ccmh-lab [--subscription <sub-id>] \
-#                 [--purge] [--remove-oidc] [--app-name id-ccmh-lab] \
+#                 [--purge] [--remove-oidc] [--app-name id-ccmh-deploy] \
 #                 [--no-wait] [--yes]
 #
 set -euo pipefail
 
 RESOURCE_GROUP="rg-ccmh-lab"
 SUBSCRIPTION=""
-APP_NAME="id-ccmh-lab"
+APP_NAME="id-ccmh-deploy"
 PURGE=false
 REMOVE_OIDC=false
 NO_WAIT=false

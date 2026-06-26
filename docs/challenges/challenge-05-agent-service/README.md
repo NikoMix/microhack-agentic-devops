@@ -111,7 +111,7 @@ By the end of this challenge you can:
 
    The agent now resolves tools over MCP instead of the in-process fixtures.
 7. **Deploy to Container Apps (keyless).** Ensure the repo/environment **Variables** are set (no secrets):
-   `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `ACR_NAME`, `RESOURCE_GROUP`,
+   `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `ACR_NAME`, `AZURE_RESOURCE_GROUP`,
    `AGENT_CONTAINERAPP`, `MCP_CONTAINERAPP`. Then run the **Agent · deploy** workflow
    ([`.github/workflows/agent-deploy.yml`](../../../.github/workflows/agent-deploy.yml)) via *Run workflow*.
    It logs in with OIDC, builds + pushes both images to ACR (keyless), and updates the Container Apps.

@@ -15,7 +15,7 @@
 param(
     [string] $ResourceGroup = 'rg-ccmh-lab',
     [string] $Subscription  = '',
-    [string] $AppName       = 'id-ccmh-lab',
+    [string] $AppName       = 'id-ccmh-deploy',
     [switch] $Purge,
     [switch] $RemoveOidc,
     [switch] $NoWait,

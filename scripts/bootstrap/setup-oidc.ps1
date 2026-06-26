@@ -12,22 +12,22 @@
     ever created or stored. Re-running is safe.
 
 .EXAMPLE
-    ./setup-oidc.ps1 -Repo 'my-org/microhack-agentic-devops' -CreateRg -RegisterProviders -SetGhSecrets
+    ./setup-oidc.ps1 -Repo 'my-org/microhack-agentic-devops' -CreateRg -RegisterProviders -SetGhVars
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $Repo,
-    [string] $AppName        = 'id-ccmh-lab',
+    [string] $AppName        = 'id-ccmh-deploy',
     [string] $ResourceGroup  = 'rg-ccmh-lab',
     [string] $Location       = 'swedencentral',
     [string] $Subscription   = '',
     [string] $Role           = 'Contributor',
     [string] $Branch         = 'main',
-    [string] $Environment    = '',
+    [string] $Environment    = 'lab',
     [switch] $CreateRg,
     [switch] $RegisterProviders,
     [string] $Budget         = '',
-    [switch] $SetGhSecrets
+    [switch] $SetGhVars
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,7 +44,7 @@ $providers = @(
 )
 
 if (-not (Get-Command az -ErrorAction SilentlyContinue)) { Die 'Azure CLI (az) is required.' }
-if ($SetGhSecrets -and -not (Get-Command gh -ErrorAction SilentlyContinue)) { Die 'GitHub CLI (gh) is required for -SetGhSecrets.' }
+if ($SetGhVars -and -not (Get-Command gh -ErrorAction SilentlyContinue)) { Die 'GitHub CLI (gh) is required for -SetGhVars.' }
 
 # ---- context ----------------------------------------------------------------
 Write-Log 'Resolving Azure context…'
@@ -146,16 +146,16 @@ if ($Budget) {
 
 # ---- emit / set the three values -------------------------------------------
 Write-Host ''
-Write-Ok 'OIDC bootstrap complete. Use these in GitHub (Settings → Secrets and variables → Actions):'
+Write-Ok 'OIDC bootstrap complete. Set these as GitHub repository Variables (Settings → Secrets and variables → Actions → Variables) — they are non-secret IDs, so the repo holds ZERO secrets:'
 Write-Host "  AZURE_CLIENT_ID=$appId"
 Write-Host "  AZURE_TENANT_ID=$tenantId"
 Write-Host "  AZURE_SUBSCRIPTION_ID=$subId"
 
-if ($SetGhSecrets) {
-    Write-Log 'Setting GitHub Actions secrets via gh…'
-    gh secret set AZURE_CLIENT_ID       --repo $Repo --body $appId;    Write-Ok 'Set AZURE_CLIENT_ID'
-    gh secret set AZURE_TENANT_ID       --repo $Repo --body $tenantId; Write-Ok 'Set AZURE_TENANT_ID'
-    gh secret set AZURE_SUBSCRIPTION_ID --repo $Repo --body $subId;     Write-Ok 'Set AZURE_SUBSCRIPTION_ID'
+if ($SetGhVars) {
+    Write-Log 'Setting GitHub Actions variables via gh…'
+    gh variable set AZURE_CLIENT_ID       --repo $Repo --body $appId;    Write-Ok 'Set AZURE_CLIENT_ID'
+    gh variable set AZURE_TENANT_ID       --repo $Repo --body $tenantId; Write-Ok 'Set AZURE_TENANT_ID'
+    gh variable set AZURE_SUBSCRIPTION_ID --repo $Repo --body $subId;     Write-Ok 'Set AZURE_SUBSCRIPTION_ID'
 }
 
 Write-Host ''

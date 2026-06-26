@@ -89,13 +89,14 @@ The script prints three **identifiers** (not secrets): `AZURE_CLIENT_ID`, `AZURE
 
 ### 3. Publish the OIDC identifiers to the repo
 
-Store the three values so `infra-deploy.yml` can log in over OIDC. They are non-secret IDs, but storing
-them as Actions **secrets** keeps them out of logs:
+Store the three values so `infra-deploy.yml` can log in over OIDC. They are non-secret identifiers — the
+security comes from the OIDC federated trust, not from hiding them — so we store them as Actions
+**variables**. This is the lab's "zero secrets in the repo" story:
 
 ```bash
-gh secret set AZURE_CLIENT_ID --body "<client-id>"
-gh secret set AZURE_TENANT_ID --body "<tenant-id>"
-gh secret set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
+gh variable set AZURE_CLIENT_ID --body "<client-id>"
+gh variable set AZURE_TENANT_ID --body "<tenant-id>"
+gh variable set AZURE_SUBSCRIPTION_ID --body "<subscription-id>"
 ```
 
 ### 4. Review the landing zone
@@ -153,7 +154,7 @@ az keyvault secret list --vault-name "$(az deployment group show -g rg-ccmh-lab 
 
 - [ ] `setup-oidc.*` completed and the federated credential exists on the Entra app
       (`az ad app federated-credential list`).
-- [ ] `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` are set as repo secrets.
+- [ ] `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` are set as repo **variables**.
 - [ ] `az deployment group what-if` ran and showed only **Create** changes.
 - [ ] `az deployment group create` succeeded; outputs include the managed identity, Key Vault, ACR,
       Container Apps environment, and Foundry endpoints.

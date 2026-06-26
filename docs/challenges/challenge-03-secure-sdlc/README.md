@@ -46,7 +46,7 @@ By the end of this challenge you can:
 ## Prerequisites
 
 - Challenge 00 complete: **GitHub ↔ Entra ID ↔ Azure OIDC** is wired (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
-  `AZURE_SUBSCRIPTION_ID` set as repo secrets/variables) and `rg-ccmh-lab` exists.
+  `AZURE_SUBSCRIPTION_ID` set as repo variables) and `rg-ccmh-lab` exists.
 - Challenge 01 complete: the Orders API repository is on GitHub with Actions enabled.
 - **GitHub Advanced Security** available on the repo (GHAS — Code Security + Secret Protection). On a public repo
   these are free; on private repos they require a GHAS licence.

@@ -25,9 +25,10 @@ so **do not let attendees leave this challenge half-finished**. Budget a checkpo
 - **AVM modules are the unit of reuse.** `br/public:avm/res/...` modules encode Microsoft's
   Well-Architected defaults (diagnostics, RBAC, private-networking hooks). We pin exact versions for
   reproducibility and run `az bicep lint` clean.
-- **Two `id-ccmh-lab` objects.** The Entra **app registration** (deploy identity, control plane) vs. the
-  **user-assigned managed identity** (runtime workload identity, data plane). Drill this — it confuses
-  people for the rest of the day otherwise.
+- **Two distinct identities, by design.** The Entra **app registration `id-ccmh-deploy`** (deploy identity,
+  control plane) vs. the **user-assigned managed identity `id-ccmh-lab`** (runtime workload identity, data
+  plane). They are deliberately named differently so the control-plane vs. data-plane split is obvious —
+  drill this, it confuses people for the rest of the day otherwise.
 - **Keyless by construction.** App Insights and Foundry set `disableLocalAuth: true`; Key Vault is RBAC
   mode; access is granted to the managed identity, not to a connection string.
 

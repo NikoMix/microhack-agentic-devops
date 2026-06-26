@@ -77,7 +77,7 @@ Services User, Cognitive Services OpenAI User, Monitoring Metrics Publisher. An 
    ```
 
    It prints `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`. Store them as
-   **repository variables/secrets** (they are identifiers, not credentials) so `infra-deploy.yml` can log
+   **repository variables** (they are identifiers, not credentials) so `infra-deploy.yml` can log
    in over OIDC. See [Challenge 00](../docs/challenges/challenge-00-foundation/README.md).
 
 ## Deploy the landing zone

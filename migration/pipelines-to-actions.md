@@ -53,7 +53,7 @@ provisioned by Workstream B's landing zone (`/infra`); names follow the shared l
 
 | Variable | Example | Purpose |
 | --- | --- | --- |
-| `AZURE_CLIENT_ID` | GUID of `id-ccmh-lab` | OIDC federated identity (also the deploy gate) |
+| `AZURE_CLIENT_ID` | GUID of `id-ccmh-deploy` | OIDC federated identity (also the deploy gate) |
 | `AZURE_TENANT_ID` | GUID | Entra tenant |
 | `AZURE_SUBSCRIPTION_ID` | GUID | Target subscription |
 | `ACR_NAME` | `crccmhlab<rand>` | Azure Container Registry |

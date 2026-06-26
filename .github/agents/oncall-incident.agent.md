@@ -6,9 +6,19 @@ description: >-
   (impact, probable cause, timeline, suggested next steps, comms blurb) that an on-call engineer can
   refine. It is an aide, not an actor: it never makes changes, runs remediation, or pages anyone.
 target: github-copilot
-tools: ['read', 'search', 'github/*']
+tools: ['read', 'search', 'github/*', 'contoso-orders/*']
 disable-model-invocation: false
 user-invocable: true
+mcp-servers:
+  # Workstream E's custom MCP server (mcp/contoso-orders-mcp) — read-only order/inventory
+  # lookups so the on-call agent can correlate an incident with affected orders/SKUs.
+  # Launched locally over stdio via uv. The default offline repository needs no secrets;
+  # for the live Azure path set ORDERS_API_BASE_URL via a COPILOT_MCP_* agents variable.
+  contoso-orders:
+    type: 'local'
+    command: 'uv'
+    args: ['run', '--project', 'mcp/contoso-orders-mcp', 'contoso-orders-mcp']
+    tools: ['get_order', 'lookup_inventory', 'get_order_history']
 metadata:
   workstream: agentic-pipeline
   challenge: '06-agentic-pipeline'
@@ -31,7 +41,9 @@ label anything you infer as a hypothesis, never as confirmed fact.
 - Optionally, recent merged PRs or deploys (to consider as a change-correlation hypothesis).
 
 Use the read-only `github` tools only to look up recent merges/workflow runs that might correlate. Do not
-request write tools and do not assume access to production systems.
+request write tools and do not assume access to production systems. When an incident references a specific
+order or SKU, you may use the read-only **`contoso-orders`** MCP tools (`get_order`, `lookup_inventory`,
+`get_order_history`) to confirm current state — never to change it.
 
 ## Output format
 

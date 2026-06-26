@@ -10,7 +10,7 @@
 #   * a least-privilege role assignment scoped to the lab resource group
 #   * (optional) the lab resource group, required resource providers, and a budget alert
 #
-# It then writes the three values you set as GitHub repo secrets/variables:
+# It then writes the three values you set as GitHub repository **variables** (not secrets):
 #   AZURE_CLIENT_ID · AZURE_TENANT_ID · AZURE_SUBSCRIPTION_ID
 #
 # No secrets are ever created or stored. Re-running is safe.
@@ -18,31 +18,31 @@
 # Usage:
 #   ./setup-oidc.sh \
 #     --repo <owner>/<repo> \
-#     [--app-name id-ccmh-lab] \
+#     [--app-name id-ccmh-deploy] \
 #     [--resource-group rg-ccmh-lab] \
 #     [--location swedencentral] \
 #     [--subscription <sub-id>] \
 #     [--role Contributor] \
 #     [--branch main] \
-#     [--environment ""] \
+#     [--environment lab] \
 #     [--create-rg] [--register-providers] [--budget <amount-gbp>] \
-#     [--set-gh-secrets]
+#     [--set-gh-vars]
 #
 set -euo pipefail
 
 # ---- defaults ---------------------------------------------------------------
-APP_NAME="id-ccmh-lab"
+APP_NAME="id-ccmh-deploy"
 RESOURCE_GROUP="rg-ccmh-lab"
 LOCATION="swedencentral"
 SUBSCRIPTION=""
 ROLE="Contributor"
 BRANCH="main"
-ENVIRONMENT=""
+ENVIRONMENT="lab"
 REPO=""
 CREATE_RG=false
 REGISTER_PROVIDERS=false
 BUDGET=""
-SET_GH_SECRETS=false
+SET_GH_VARS=false
 
 PROVIDERS=(
   Microsoft.App
@@ -78,7 +78,7 @@ while [[ $# -gt 0 ]]; do
     --create-rg)          CREATE_RG=true; shift;;
     --register-providers) REGISTER_PROVIDERS=true; shift;;
     --budget)             BUDGET="$2"; shift 2;;
-    --set-gh-secrets)     SET_GH_SECRETS=true; shift;;
+    --set-gh-vars)        SET_GH_VARS=true; shift;;
     -h|--help)            usage;;
     *) die "Unknown argument: $1 (use --help)";;
   esac
@@ -86,7 +86,7 @@ done
 
 command -v az >/dev/null || die "Azure CLI (az) is required."
 [[ -n "$REPO" ]] || die "--repo <owner>/<repo> is required."
-if $SET_GH_SECRETS; then command -v gh >/dev/null || die "GitHub CLI (gh) is required for --set-gh-secrets."; fi
+if $SET_GH_VARS; then command -v gh >/dev/null || die "GitHub CLI (gh) is required for --set-gh-vars."; fi
 
 # ---- context ----------------------------------------------------------------
 log "Resolving Azure context…"
@@ -195,16 +195,16 @@ fi
 
 # ---- emit / set the three values -------------------------------------------
 echo
-ok "OIDC bootstrap complete. Use these in GitHub (Settings → Secrets and variables → Actions):"
+ok "OIDC bootstrap complete. Set these as GitHub repository Variables (Settings → Secrets and variables → Actions → Variables) — they are non-secret IDs, so the repo holds ZERO secrets:"
 echo "  AZURE_CLIENT_ID=$APP_ID"
 echo "  AZURE_TENANT_ID=$TENANT_ID"
 echo "  AZURE_SUBSCRIPTION_ID=$SUB_ID"
 
-if $SET_GH_SECRETS; then
-  log "Setting GitHub Actions secrets via gh…"
-  gh secret set AZURE_CLIENT_ID       --repo "$REPO" --body "$APP_ID"   && ok "Set AZURE_CLIENT_ID"
-  gh secret set AZURE_TENANT_ID       --repo "$REPO" --body "$TENANT_ID" && ok "Set AZURE_TENANT_ID"
-  gh secret set AZURE_SUBSCRIPTION_ID --repo "$REPO" --body "$SUB_ID"    && ok "Set AZURE_SUBSCRIPTION_ID"
+if $SET_GH_VARS; then
+  log "Setting GitHub Actions variables via gh…"
+  gh variable set AZURE_CLIENT_ID       --repo "$REPO" --body "$APP_ID"   && ok "Set AZURE_CLIENT_ID"
+  gh variable set AZURE_TENANT_ID       --repo "$REPO" --body "$TENANT_ID" && ok "Set AZURE_TENANT_ID"
+  gh variable set AZURE_SUBSCRIPTION_ID --repo "$REPO" --body "$SUB_ID"    && ok "Set AZURE_SUBSCRIPTION_ID"
 fi
 
 echo

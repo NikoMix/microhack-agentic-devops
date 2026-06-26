@@ -40,7 +40,7 @@ What they do:
 | `--resource-group` | `-ResourceGroup` | RG to delete (default `rg-ccmh-lab`) |
 | `--subscription` | `-Subscription` | Target a specific subscription |
 | `--purge` | `-Purge` | Purge soft-deleted Key Vaults / Cognitive Services |
-| `--remove-oidc` | `-RemoveOidc` | Delete the Entra ID app registration (`id-ccmh-lab`) |
+| `--remove-oidc` | `-RemoveOidc` | Delete the Entra ID app registration (`id-ccmh-deploy`) |
 | `--app-name` | `-AppName` | Override the app-registration name to remove |
 | `--no-wait` | `-NoWait` | Start RG deletion in the background (skips purge) |
 | `--yes` / `-y` | `-Yes` | Skip the confirmation prompt |

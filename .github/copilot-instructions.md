@@ -44,11 +44,21 @@ AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=...
 AZURE_AI_FOUNDRY_CHAT_DEPLOYMENT=gpt-4o-mini
 ```
 
+> **Actions variable mapping & zero secrets:** GitHub Actions forbids `GITHUB_`-prefixed repository
+> variables, so at the **workflow** layer the app's `GITHUB_MODELS_MODEL` is supplied via the repo variable
+> **`GH_MODELS_MODEL`** (see `agentic-inference.yml`); the app/runtime layer still reads `GITHUB_MODELS_MODEL`.
+> All Azure OIDC IDs (`AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID`) and lab settings are
+> stored as repository **Variables**, never secrets — they are identifiers and the trust is OIDC federation,
+> so the repo holds **zero secrets**.
+
 ## Azure naming (lab)
 
 RG `rg-ccmh-lab` · prefix `ccmh` · region `swedencentral` (alts `westeurope`, `eastus2`) · ACR `crccmhlab<rand>` ·
 ACA env `cae-ccmh-lab` · Key Vault `kv-ccmh-<rand>` · Log Analytics `log-ccmh-lab` · App Insights `appi-ccmh-lab` ·
-Foundry `aif-ccmh-lab`/`proj-ccmh-lab` · managed identity `id-ccmh-lab`.
+Foundry `aif-ccmh-lab`/`proj-ccmh-lab` · workload **managed identity `id-ccmh-lab`** (data plane).
+
+> The OIDC **deploy** app registration (control plane, created by `scripts/bootstrap/setup-oidc.*`) is a
+> separate object named **`id-ccmh-deploy`** — keep it distinct from the `id-ccmh-lab` workload identity.
 
 ## Where things live
 

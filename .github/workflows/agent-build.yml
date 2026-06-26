@@ -37,7 +37,7 @@ jobs:
           - name: mcp
             path: mcp/contoso-orders-mcp
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Set up uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
@@ -86,7 +86,33 @@ jobs:
           - name: mcp
             context: mcp/contoso-orders-mcp
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Build image (no push)
         run: docker build -t "${{ matrix.name }}:ci" "${{ matrix.context }}"
+
+  sign:
+    name: Sign & attest · ${{ matrix.name }}
+    needs: quality
+    # Challenge 03 supply-chain capability via Workstream D's reusable workflow:
+    # build -> push to GHCR -> cosign keyless-sign -> SBOM (SPDX) + SLSA provenance.
+    # Runs on merge to main and manual dispatch (fork PRs cannot push to GHCR).
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    permissions:
+      contents: read # checkout
+      packages: write # push image + attestations to GHCR
+      id-token: write # cosign keyless signing (Sigstore OIDC)
+      attestations: write # build-provenance attestation
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: order-support-agent
+            context: src/order-support-agent
+          - name: contoso-orders-mcp
+            context: mcp/contoso-orders-mcp
+    uses: ./.github/workflows/security-sign.yml
+    with:
+      image-name: ${{ matrix.name }}
+      context: ${{ matrix.context }}
+      dockerfile: ${{ matrix.context }}/Dockerfile
