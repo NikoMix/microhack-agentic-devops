@@ -1,0 +1,114 @@
+# Dependabot — automated dependency & security updates (Challenge 03, Secure SDLC).
+#
+# Owned by the Secure SDLC workstream. Keeps every ecosystem in the MicroHack on the
+# latest stable, vulnerability-free versions (the "zero known vulns" contract in
+# .github/copilot-instructions.md). Security updates are raised automatically the moment
+# an advisory lands; version updates are batched weekly and grouped to limit PR churn.
+#
+# Manifest directories marked "(created at integration)" are owned by other workstreams;
+# Dependabot simply no-ops until the manifest exists.
+version: 2
+
+updates:
+  # ---- .NET Orders API — NuGet, Central Package Management (created at integration) ----
+  - package-ecosystem: "nuget"
+    directory: "/src/legacy-orders-api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+    labels: ["type:chore", "area:dotnet", "area:security"]
+    groups:
+      dotnet-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # ---- Python agent — uv / pyproject.toml + uv.lock (created at integration) ----
+  - package-ecosystem: "uv"
+    directory: "/src/order-support-agent"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+    labels: ["type:chore", "area:python", "area:security"]
+    groups:
+      python-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # ---- Custom MCP server — uv / pyproject.toml (created at integration) ----
+  - package-ecosystem: "uv"
+    directory: "/mcp"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+    labels: ["type:chore", "area:python", "area:security"]
+    groups:
+      mcp-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # ---- npm — repo tooling / any JavaScript that lands (activates on first package.json) ----
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+    labels: ["type:chore", "area:security"]
+    groups:
+      npm-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # ---- GitHub Actions — keep every workflow's actions SHA-pinned and current ----
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "build(deps)"
+    labels: ["type:chore", "area:actions", "area:security"]
+    groups:
+      actions-all:
+        patterns: ["*"]
+
+  # ---- Docker base images for the Orders API, agent, and MCP server ----
+  - package-ecosystem: "docker"
+    directories:
+      - "/src/legacy-orders-api"
+      - "/src/order-support-agent"
+      - "/mcp"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "build(deps)"
+    labels: ["type:chore", "area:security"]
+    groups:
+      docker-all:
+        patterns: ["*"]

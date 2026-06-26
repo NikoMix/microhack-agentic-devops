@@ -1,0 +1,69 @@
+# GitHub Code Security — CodeQL static analysis (Challenge 03, Secure SDLC).
+#
+# Scans the C# Orders API and the Python agent / MCP server with the CodeQL engine and
+# uploads results to the repository's code-scanning alerts. Findings are eligible for
+# Copilot Autofix (see docs/challenges/challenge-03-secure-sdlc/coach-notes.md).
+#
+# Modern CodeQL uses build-mode "none" by default for C# (and C/C++, Java, Rust): the
+# database is built straight from source with no .NET SDK or successful compile required,
+# which keeps this lab robust. Switch the csharp leg to build-mode "autobuild" for
+# deeper, build-aware results once the Orders API compiles cleanly.
+name: security-codeql
+
+on:
+  push:
+    branches: ["main", "nikomix-module-b-training-lab"]
+  pull_request:
+    branches: ["main", "nikomix-module-b-training-lab"]
+  schedule:
+    # Weekly defence-in-depth scan — Mondays 03:27 UTC (off the top of the hour).
+    - cron: "27 3 * * 1"
+  workflow_dispatch:
+
+# Least privilege at the top level; the analyze job widens only what it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: security-codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
+      security-events: write # upload SARIF to code scanning
+      actions: read # read workflow run metadata (private repos)
+      packages: read # restore packages during database creation if needed
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: csharp
+            build-mode: none
+          - language: python
+            build-mode: none
+    steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+        with:
+          category: "/language:${{ matrix.language }}"
