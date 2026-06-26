@@ -1,0 +1,40 @@
+# CodeQL configuration — Contoso Commerce Agentic DevOps MicroHack (Challenge 03).
+#
+# Consumed by .github/workflows/security-codeql.yml. Keeping the configuration in a
+# dedicated file (rather than inline) means GitHub default setup, advanced setup, and
+# the local CodeQL CLI all read the *same* analysis contract.
+#
+# GitHub Code Security (CodeQL) scans the first-party application code only. Generated,
+# vendored, and test-scaffolding paths are excluded so alerts stay actionable and
+# Copilot Autofix has clean signal to work with.
+name: "Contoso Commerce — CodeQL config"
+
+# Run the security-extended query suite: the default security queries plus additional
+# lower-severity / higher-precision security rules. Swap to security-and-quality to also
+# surface maintainability findings (noisier — see coach-notes.md).
+queries:
+  - uses: security-extended
+
+# Scope analysis to the code the MicroHack actually ships.
+#   - src/legacy-orders-api  → C# Orders API   (delivered by Workstream C)
+#   - src/order-support-agent → Python agent    (delivered by Workstream E)
+#   - mcp                     → custom MCP server (Python; delivered by Workstream E)
+# These directories are created at integration; until then CodeQL simply finds no code
+# for a missing path. The C# and Python matrix legs each require at least one source
+# tree to exist when the workflow runs for real.
+paths:
+  - src/legacy-orders-api
+  - src/order-support-agent
+  - mcp
+
+# Never analyze build output, virtual environments, vendored modules, or test fixtures.
+paths-ignore:
+  - "**/bin/**"
+  - "**/obj/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/node_modules/**"
+  - "**/tests/**"
+  - "**/test/**"
+  - "**/*.Tests/**"
+  - "**/__pycache__/**"
