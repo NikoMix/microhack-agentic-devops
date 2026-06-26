@@ -1,0 +1,34 @@
+[
+  {
+    "sku": "SKU-ESP-01",
+    "description": "Contoso Aurora Espresso Machine",
+    "available": 12,
+    "reserved": 5,
+    "warehouse": "SE-CENTRAL",
+    "restock_eta": "2025-10-20T09:00:00+00:00"
+  },
+  {
+    "sku": "SKU-GRD-02",
+    "description": "Contoso Burr Coffee Grinder",
+    "available": 40,
+    "reserved": 8,
+    "warehouse": "SE-CENTRAL",
+    "restock_eta": null
+  },
+  {
+    "sku": "SKU-CUP-04",
+    "description": "Contoso Ceramic Cup Set (4)",
+    "available": 0,
+    "reserved": 0,
+    "warehouse": "SE-CENTRAL",
+    "restock_eta": "2025-10-16T09:00:00+00:00"
+  },
+  {
+    "sku": "SKU-BAG-09",
+    "description": "Contoso Single-Origin Beans 1kg",
+    "available": 220,
+    "reserved": 15,
+    "warehouse": "SE-WEST",
+    "restock_eta": null
+  }
+]

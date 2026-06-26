@@ -1,0 +1,92 @@
+name: Agent · build
+
+# Lint, type-check, test and audit the Order Support agent + Orders MCP server,
+# then verify both container images build. No cloud access — see agent-deploy.yml.
+
+on:
+  push:
+    branches: ["main", "nikomix-module-b-training-lab"]
+    paths:
+      - "src/order-support-agent/**"
+      - "mcp/**"
+      - ".github/workflows/agent-build.yml"
+  pull_request:
+    paths:
+      - "src/order-support-agent/**"
+      - "mcp/**"
+      - ".github/workflows/agent-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality · ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: agent
+            path: src/order-support-agent
+          - name: mcp
+            path: mcp/contoso-orders-mcp
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          version: "0.11.21"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "${{ matrix.path }}/uv.lock"
+
+      - name: Sync (frozen)
+        working-directory: ${{ matrix.path }}
+        run: uv sync --frozen
+
+      - name: Ruff lint
+        working-directory: ${{ matrix.path }}
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        working-directory: ${{ matrix.path }}
+        run: uv run ruff format --check .
+
+      - name: Type-check (mypy --strict)
+        working-directory: ${{ matrix.path }}
+        run: uv run mypy .
+
+      - name: Tests
+        working-directory: ${{ matrix.path }}
+        run: uv run pytest
+
+      - name: Audit dependencies (pip-audit)
+        working-directory: ${{ matrix.path }}
+        run: uv run pip-audit
+
+  images:
+    name: Image · ${{ matrix.name }}
+    needs: quality
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: agent
+            context: src/order-support-agent
+          - name: mcp
+            context: mcp/contoso-orders-mcp
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Build image (no push)
+        run: docker build -t "${{ matrix.name }}:ci" "${{ matrix.context }}"

@@ -1,0 +1,122 @@
+[project]
+name = "order-support-agent"
+version = "0.1.0"
+description = "Contoso Commerce Order Support / Triage agent — Microsoft Agent Framework + modular inference."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+authors = [{ name = "Contoso Commerce MicroHack" }]
+keywords = ["agent", "triage", "modular-inference", "agentic-devops", "microhack"]
+
+dependencies = [
+    "agent-framework-core>=1.9.0",
+    "aiohttp>=3.11",
+    "azure-ai-inference>=1.0.0b9",
+    "azure-identity>=1.19",
+    "azure-monitor-opentelemetry>=1.8.8",
+    "fastapi>=0.115",
+    "openai>=2.44.0",
+    "opentelemetry-api>=1.40.0",
+    "opentelemetry-instrumentation-fastapi>=0.55b0",
+    "opentelemetry-sdk>=1.40.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+    "uvicorn>=0.34",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28",
+    "mypy>=1.18",
+    "pip-audit>=2.10.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.14",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+order-support-agent = "order_support_agent.__main__:main"
+order-support-agent-serve = "order_support_agent.service:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/order_support_agent"]
+
+# ---------------------------------------------------------------------------
+# Ruff — lint + format. Python standard for this repo is 100 cols (.editorconfig).
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",      # pycodestyle
+    "F",           # pyflakes
+    "I",           # isort
+    "N",           # pep8-naming
+    "D",           # pydocstyle
+    "UP",          # pyupgrade
+    "B",           # flake8-bugbear
+    "A",           # flake8-builtins
+    "C4",          # flake8-comprehensions
+    "ASYNC",       # flake8-async
+    "S",           # flake8-bandit (security smells)
+    "PT",          # flake8-pytest-style
+    "SIM",         # flake8-simplify
+    "TID",         # flake8-tidy-imports
+    "PTH",         # flake8-use-pathlib
+    "RET",         # flake8-return
+    "PIE",         # flake8-pie
+    "LOG", "G",    # logging correctness
+    "RUF",         # ruff-specific
+]
+ignore = [
+    "D105",  # missing docstring in magic method
+    "D107",  # missing docstring in __init__ (documented at class level)
+    "S101",  # asserts are expected in tests (further relaxed below)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D100", "D101", "D102", "D103", "D104", "S101", "S106", "PLR2004"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+# ---------------------------------------------------------------------------
+# mypy — strict, fully typed.
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_unimported = false
+enable_error_code = ["redundant-expr", "truthy-bool", "ignore-without-code"]
+files = ["src", "tests"]
+
+# Azure AI Projects is an *optional* runtime dependency used only for Foundry
+# trace auto-discovery; keep it out of the default install + audit surface.
+[[tool.mypy.overrides]]
+module = ["azure.ai.projects.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"
+filterwarnings = [
+    "ignore::UserWarning:agent_framework",
+]

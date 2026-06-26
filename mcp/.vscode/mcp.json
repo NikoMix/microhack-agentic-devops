@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "contoso-orders": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/mcp/contoso-orders-mcp",
+        "contoso-orders-mcp"
+      ]
+    }
+  }
+}
