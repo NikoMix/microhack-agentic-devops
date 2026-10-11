@@ -1,0 +1,80 @@
+[project]
+name = "contoso-orders-mcp"
+version = "0.1.0"
+description = "Contoso Commerce Orders MCP server — safe, Azure-facing tools for the Order Support agent."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+authors = [{ name = "Contoso Commerce MicroHack" }]
+keywords = ["mcp", "model-context-protocol", "orders", "agentic-devops", "microhack"]
+
+dependencies = [
+    "aiohttp>=3.11",  # azure-identity aio transport (live path)
+    "azure-identity>=1.19",
+    "httpx>=0.28",
+    "mcp[cli]>=1.28.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18",
+    "pip-audit>=2.10.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.14",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+contoso-orders-mcp = "contoso_orders_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/contoso_orders_mcp"]
+
+# ---------------------------------------------------------------------------
+# Ruff — lint + format (100 cols, google docstrings).
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "D", "UP", "B", "A", "C4", "ASYNC", "S",
+    "PT", "SIM", "TID", "PTH", "RET", "PIE", "LOG", "G", "RUF",
+]
+ignore = ["D105", "D107", "S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D100", "D101", "D102", "D103", "D104", "S101", "S106", "PLR2004"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+# ---------------------------------------------------------------------------
+# mypy — strict.
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+enable_error_code = ["redundant-expr", "truthy-bool", "ignore-without-code"]
+files = ["src", "tests"]
+
+# ---------------------------------------------------------------------------
+# pytest.
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra"

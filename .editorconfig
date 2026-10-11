@@ -1,0 +1,56 @@
+# EditorConfig — Contoso Commerce MicroHack
+# https://editorconfig.org  ·  Enforced in CI + pre-commit across .NET, Python, Bicep, YAML, Markdown.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+[*.{md,mdx}]
+trim_trailing_whitespace = false   # markdown hard line breaks
+indent_size = 2
+
+[*.{yml,yaml,json,jsonc}]
+indent_size = 2
+
+[*.{js,ts,tsx,jsx,css}]
+indent_size = 2
+
+[*.{bicep,bicepparam}]
+indent_size = 2
+
+[*.{ps1,psm1,psd1}]
+indent_size = 4
+
+[*.sh]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+# ---------------- .NET / C# ----------------
+[*.cs]
+indent_size = 4
+# Treat analyzer + style violations as build errors in CI
+dotnet_analyzer_diagnostic.severity = warning
+dotnet_diagnostic.IDE0005.severity = warning   # unnecessary usings
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+csharp_prefer_braces = true:warning
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+csharp_style_var_when_type_is_apparent = true:suggestion
+dotnet_style_namespace_match_folder = true:warning
+
+[*.{csproj,props,targets}]
+indent_size = 2
+
+# ---------------- Python ----------------
+[*.py]
+indent_size = 4
+max_line_length = 100

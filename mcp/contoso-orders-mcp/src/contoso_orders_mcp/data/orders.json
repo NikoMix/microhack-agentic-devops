@@ -1,0 +1,108 @@
+[
+  {
+    "order_id": "1001",
+    "customer_id": "C-001",
+    "status": "delayed",
+    "placed_at": "2025-09-18T09:00:00+00:00",
+    "currency": "EUR",
+    "lines": [
+      {
+        "sku": "SKU-ESP-01",
+        "description": "Contoso Aurora Espresso Machine",
+        "quantity": 1,
+        "unit_price": "499.00"
+      }
+    ],
+    "shipping_city": "Stockholm",
+    "carrier": "PostNord",
+    "tracking_number": "PN-7781-SE",
+    "estimated_delivery": "2025-09-24T09:00:00+00:00",
+    "notes": "Customer reports the parcel has not moved for six days."
+  },
+  {
+    "order_id": "1002",
+    "customer_id": "C-002",
+    "status": "delivered",
+    "placed_at": "2025-09-28T09:00:00+00:00",
+    "currency": "EUR",
+    "lines": [
+      {
+        "sku": "SKU-GRD-02",
+        "description": "Contoso Burr Coffee Grinder",
+        "quantity": 1,
+        "unit_price": "129.00"
+      },
+      {
+        "sku": "SKU-CUP-04",
+        "description": "Contoso Ceramic Cup Set (4)",
+        "quantity": 2,
+        "unit_price": "39.00"
+      }
+    ],
+    "shipping_city": "Gothenburg",
+    "carrier": "DHL",
+    "tracking_number": "DHL-5521-SE",
+    "estimated_delivery": "2025-10-01T09:00:00+00:00",
+    "notes": "Customer says one cup arrived shattered."
+  },
+  {
+    "order_id": "1003",
+    "customer_id": "C-002",
+    "status": "delivered",
+    "placed_at": "2025-07-11T09:00:00+00:00",
+    "currency": "EUR",
+    "lines": [
+      {
+        "sku": "SKU-BAG-09",
+        "description": "Contoso Single-Origin Beans 1kg",
+        "quantity": 3,
+        "unit_price": "24.00"
+      }
+    ],
+    "shipping_city": "Gothenburg",
+    "carrier": "DHL",
+    "tracking_number": "DHL-3390-SE",
+    "estimated_delivery": "2025-07-14T09:00:00+00:00",
+    "notes": null
+  },
+  {
+    "order_id": "1004",
+    "customer_id": "C-003",
+    "status": "paid",
+    "placed_at": "2025-10-03T09:00:00+00:00",
+    "currency": "EUR",
+    "lines": [
+      {
+        "sku": "SKU-ESP-01",
+        "description": "Contoso Aurora Espresso Machine",
+        "quantity": 4,
+        "unit_price": "499.00"
+      }
+    ],
+    "shipping_city": "Malmo",
+    "carrier": null,
+    "tracking_number": null,
+    "estimated_delivery": null,
+    "notes": "Large first-time order flagged for review by the payments team."
+  },
+  {
+    "order_id": "1005",
+    "customer_id": "C-004",
+    "status": "shipped",
+    "placed_at": "2025-10-02T09:00:00+00:00",
+    "currency": "EUR",
+    "lines": [
+      {
+        "sku": "SKU-GRD-02",
+        "description": "Contoso Burr Coffee Grinder",
+        "quantity": 1,
+        "unit_price": "129.00"
+      }
+    ],
+    "shipping_city": "Uppsala",
+    "carrier": "PostNord",
+    "tracking_number": "PN-9001-SE",
+    "estimated_delivery": "2025-10-08T09:00:00+00:00",
+    "notes": null
+  }
+]

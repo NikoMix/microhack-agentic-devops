@@ -1,0 +1,27 @@
+[
+  { "name": "type:epic", "color": "6f42c1", "description": "Tracking epic spanning multiple workstreams" },
+  { "name": "type:challenge", "color": "0e8a16", "description": "A microhack challenge / workstream task" },
+  { "name": "type:chore", "color": "fef2c0", "description": "Maintenance, deps, tooling" },
+
+  { "name": "workstream:foundation", "color": "1d76db", "description": "Foundation, trainer content, integration" },
+  { "name": "workstream:infra", "color": "0052cc", "description": "Bicep AVM landing zone + runners" },
+  { "name": "workstream:migration", "color": "5319e7", "description": "Legacy .NET app + Azure DevOps -> GitHub" },
+  { "name": "workstream:secure-sdlc", "color": "b60205", "description": "Code Security, Secret Protection, signing" },
+  { "name": "workstream:agent-mcp", "color": "0e8a16", "description": "Python agent, modular inference, MCP" },
+  { "name": "workstream:agentic-pipeline", "color": "d93f0b", "description": "PR-triage / release-notes / on-call agents" },
+
+  { "name": "challenge:00-foundation", "color": "c5def5", "description": "Platform foundation + OIDC" },
+  { "name": "challenge:01-migration", "color": "c5def5", "description": "Azure DevOps -> GitHub migration" },
+  { "name": "challenge:02-runners-oidc", "color": "c5def5", "description": "Self-hosted runners on Azure + OIDC" },
+  { "name": "challenge:03-secure-sdlc", "color": "c5def5", "description": "Secure SDLC" },
+  { "name": "challenge:04-copilot-mcp", "color": "c5def5", "description": "Copilot agent + custom MCP server" },
+  { "name": "challenge:05-agent-service", "color": "c5def5", "description": "Build + deploy the agent service" },
+  { "name": "challenge:06-agentic-pipeline", "color": "c5def5", "description": "Agentic release pipeline" },
+
+  { "name": "area:docs", "color": "bfdadc", "description": "Trainer/student documentation" },
+  { "name": "area:dotnet", "color": "512bd4", "description": ".NET / C#" },
+  { "name": "area:python", "color": "ffd343", "description": "Python" },
+  { "name": "area:bicep", "color": "0078d4", "description": "Bicep / IaC" },
+  { "name": "area:actions", "color": "2088ff", "description": "GitHub Actions" },
+  { "name": "area:security", "color": "b60205", "description": "Security tooling" }
+]

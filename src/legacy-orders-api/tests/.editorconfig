@@ -1,0 +1,12 @@
+# EditorConfig — test project (layers on top of src/legacy-orders-api/.editorconfig).
+# Relaxes a few rules that are idiomatic to disable in test code; everything else
+# (warnings-as-errors, analyzers, house style) is inherited unchanged.
+
+[*.cs]
+
+# CA1707: Test method names use Given_When_Then underscores for readability.
+dotnet_diagnostic.CA1707.severity = none
+# CA2234: Integration tests intentionally call HttpClient with string routes.
+dotnet_diagnostic.CA2234.severity = none
+# CA1062: Test methods are entry points invoked by the runner, not public API surface.
+dotnet_diagnostic.CA1062.severity = none

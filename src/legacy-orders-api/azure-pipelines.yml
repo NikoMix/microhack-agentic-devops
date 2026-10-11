@@ -1,0 +1,145 @@
+# =============================================================================
+# Contoso Orders API — Azure Pipelines (the "BEFORE")
+# =============================================================================
+# This is the classic Azure DevOps pipeline that ships the Orders API today, on
+# a self-managed Azure DevOps organization. Challenge 01 migrates this definition
+# to GitHub Actions (see ../../.github/workflows/orders-api-ci.yml).
+#
+# It is intentionally representative of a typical line-of-business pipeline:
+#   * build / test / publish with the classic DotNetCoreCLI@2 tasks,
+#   * a Docker registry *service connection* (a stored ACR credential),
+#   * an Azure Resource Manager *service connection* (a stored service principal)
+#     used to deploy to Azure Container Apps.
+#
+# The migration replaces both stored-credential service connections with
+# short-lived GitHub OIDC federation — there are no secrets in the "after".
+# =============================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/legacy-orders-api/*
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/legacy-orders-api/*
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+  workingDirectory: src/legacy-orders-api
+  dotnetVersion: 10.0.x
+  # Set in the pipeline's variable group / UI, NOT in source:
+  #   dockerRegistryServiceConnection  -> ACR service connection (stored credential)
+  #   azureServiceConnection           -> ARM service connection (stored service principal)
+  containerRegistry: crccmhlab.azurecr.io
+  imageRepository: contoso/orders-api
+  containerAppName: ca-ccmh-orders-api
+  resourceGroup: rg-ccmh-lab
+
+stages:
+  - stage: Build
+    displayName: Build, test, and publish
+    jobs:
+      - job: build
+        displayName: Build and test
+        steps:
+          - task: UseDotNet@2
+            displayName: Install .NET SDK
+            inputs:
+              packageType: sdk
+              version: $(dotnetVersion)
+
+          - task: DotNetCoreCLI@2
+            displayName: Restore
+            inputs:
+              command: restore
+              projects: $(workingDirectory)/Contoso.Orders.slnx
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              projects: $(workingDirectory)/Contoso.Orders.slnx
+              arguments: --configuration $(buildConfiguration) --no-restore -warnaserror
+
+          - task: DotNetCoreCLI@2
+            displayName: Test
+            inputs:
+              command: test
+              projects: $(workingDirectory)/tests/**/*.csproj
+              arguments: >-
+                --configuration $(buildConfiguration)
+                --no-build
+                --collect:"XPlat Code Coverage"
+              publishTestResults: true
+
+          - task: DotNetCoreCLI@2
+            displayName: Publish
+            inputs:
+              command: publish
+              publishWebProjects: false
+              projects: $(workingDirectory)/src/Contoso.Orders.Api/Contoso.Orders.Api.csproj
+              arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+              zipAfterPublish: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: Upload artifact
+            inputs:
+              pathToPublish: $(Build.ArtifactStagingDirectory)
+              artifactName: orders-api
+
+  - stage: Package
+    displayName: Build and push container image
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: docker
+        displayName: Docker build and push
+        steps:
+          - task: Docker@2
+            displayName: Build and push to ACR
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(workingDirectory)/Dockerfile
+              buildContext: $(workingDirectory)
+              # Stored ACR credential — the thing OIDC federation removes.
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(Build.BuildId)
+                latest
+
+  - stage: Deploy
+    displayName: Deploy to Azure Container Apps
+    dependsOn: Package
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: deploy
+        displayName: Update container app
+        environment: ccmh-lab
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: az containerapp update
+                  inputs:
+                    # Stored service principal — the thing OIDC federation removes.
+                    azureSubscription: $(azureServiceConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: >-
+                      az containerapp update
+                      --name $(containerAppName)
+                      --resource-group $(resourceGroup)
+                      --image $(containerRegistry)/$(imageRepository):$(Build.BuildId)

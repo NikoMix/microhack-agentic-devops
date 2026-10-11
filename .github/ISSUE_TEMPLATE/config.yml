@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Module B specialization (accelerator)
+    url: https://github.com/NikoMix/specialization-agentic-devops
+    about: Audit/evidence/ACR/cert/onboarding controls live here (out of scope for this microhack).
+  - name: Trainer guide
+    url: https://github.com/NikoMix/microhack-agentic-devops/tree/main/docs/trainer
+    about: Facilitator guide, agenda, timing, and Train-the-Trainer notes.

@@ -1,0 +1,131 @@
+name: Infra landing zone
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Contoso Commerce — Agentic DevOps MicroHack · Challenge 00 / 02
+# Deploys the Bicep AVM landing zone into rg-ccmh-lab using GitHub OIDC (no stored
+# cloud secrets). Pull requests run a what-if preview; a manual dispatch deploys.
+#
+# Auth: federated credentials created by scripts/bootstrap/setup-oidc.* — the repo
+# only stores the non-secret AZURE_CLIENT_ID / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-deploy.yml"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "plan (what-if preview) or deploy (create)"
+        type: choice
+        options:
+          - plan
+          - deploy
+        default: plan
+      resourceGroup:
+        description: "Target resource group"
+        type: string
+        default: rg-ccmh-lab
+
+# Least-privilege default for the whole workflow. Jobs that need OIDC opt in to
+# id-token: write locally.
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: ${{ github.event.inputs.resourceGroup || 'rg-ccmh-lab' }}
+  TEMPLATE_FILE: infra/main.bicep
+  PARAMETERS_FILE: infra/main.bicepparam
+
+jobs:
+  lint:
+    name: Bicep build + lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: az bicep build + lint
+        shell: bash
+        run: |
+          set -euo pipefail
+          az bicep version
+          for f in infra/main.bicep infra/modules/runners-vmss.bicep; do
+            echo "::group::$f"
+            az bicep build --file "$f"
+            az bicep lint --file "$f"
+            echo "::endgroup::"
+          done
+          az bicep build-params --file infra/main.bicepparam --outfile /tmp/main.params.json
+
+  whatif:
+    name: What-if preview
+    needs: lint
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC token for azure/login
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Azure login (OIDC, no secrets)
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Deployment what-if
+        shell: bash
+        run: |
+          set -euo pipefail
+          az deployment group what-if \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file "$TEMPLATE_FILE" \
+            --parameters "$PARAMETERS_FILE" \
+            --result-format FullResourcePayloads
+
+  deploy:
+    name: Deploy landing zone
+    needs: lint
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.action == 'deploy'
+    runs-on: ubuntu-latest
+    environment: lab # add reviewers here to require manual approval before deploy
+    permissions:
+      id-token: write # OIDC token for azure/login
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Azure login (OIDC, no secrets)
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          az deployment group create \
+            --name "infra-${GITHUB_RUN_ID}" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file "$TEMPLATE_FILE" \
+            --parameters "$PARAMETERS_FILE" \
+            --query "properties.provisioningState" -o tsv
+      - name: Surface deployment outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          az deployment group show \
+            --name "infra-${GITHUB_RUN_ID}" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --query "properties.outputs" -o json

@@ -1,0 +1,162 @@
+# =============================================================================
+# Contoso Orders API — CI/CD (the "AFTER")
+# =============================================================================
+# Migrated from src/legacy-orders-api/azure-pipelines.yml during Challenge 01.
+#
+# Security posture (the point of the migration):
+#   * Least-privilege GITHUB_TOKEN — read-only by default; id-token:write is
+#     granted only to the job that talks to Azure.
+#   * No stored cloud credentials. Azure auth uses GitHub OIDC federation
+#     (azure/login with client-id/tenant-id/subscription-id, no client secret).
+#   * No registry credentials. The image is built server-side with `az acr build`
+#     using the federated identity's AcrPush role.
+#   * Every action is pinned to a full commit SHA.
+#
+# The deploy job is gated on `vars.AZURE_CLIENT_ID`, so the build/test gate works
+# in any fork while the Azure deployment only runs once the lab variables are set.
+# =============================================================================
+
+name: orders-api-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/legacy-orders-api/**
+      - .github/workflows/orders-api-ci.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - src/legacy-orders-api/**
+      - .github/workflows/orders-api-ci.yml
+  workflow_dispatch:
+
+# Read-only by default. Jobs opt into more only when they need it.
+permissions:
+  contents: read
+
+concurrency:
+  group: orders-api-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  SOLUTION_DIR: src/legacy-orders-api
+  API_PROJECT: src/legacy-orders-api/src/Contoso.Orders.Api/Contoso.Orders.Api.csproj
+  IMAGE_REPOSITORY: contoso/orders-api
+
+jobs:
+  build-test:
+    name: Build, test, and scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+        with:
+          global-json-file: src/legacy-orders-api/global.json
+
+      - name: Restore
+        run: dotnet restore "${SOLUTION_DIR}/Contoso.Orders.slnx"
+
+      - name: Build (warnings as errors)
+        run: >-
+          dotnet build "${SOLUTION_DIR}/Contoso.Orders.slnx"
+          --configuration Release
+          --no-restore
+          -warnaserror
+
+      - name: Verify formatting
+        run: dotnet format "${SOLUTION_DIR}/Contoso.Orders.slnx" --verify-no-changes --no-restore
+
+      - name: Test
+        run: >-
+          dotnet test "${SOLUTION_DIR}/Contoso.Orders.slnx"
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=orders-api.trx"
+          --results-directory "${{ github.workspace }}/test-results"
+
+      - name: Scan for vulnerable NuGet packages
+        run: |
+          report=$(dotnet list "${API_PROJECT}" package --vulnerable --include-transitive)
+          echo "${report}"
+          if echo "${report}" | grep -q "has the following vulnerable packages"; then
+            echo "::error::Vulnerable NuGet packages detected. Update the pinned versions in Directory.Packages.props."
+            exit 1
+          fi
+          echo "No vulnerable packages found."
+
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: orders-api-test-results
+          path: ${{ github.workspace }}/test-results/**/*.trx
+          if-no-files-found: ignore
+
+  sign:
+    name: Sign & attest image (supply chain)
+    needs: build-test
+    # Challenge 03 supply-chain capability via Workstream D's reusable workflow:
+    # build -> push to GHCR -> cosign keyless-sign -> SBOM (SPDX) + SLSA provenance.
+    # Runs on merge to main and manual dispatch; the ACA deploy below uses az acr build
+    # for the runtime image. See docs/challenges/challenge-03-secure-sdlc for verification.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    permissions:
+      contents: read # checkout
+      packages: write # push image + attestations to GHCR
+      id-token: write # cosign keyless signing (Sigstore OIDC)
+      attestations: write # build-provenance attestation
+    uses: ./.github/workflows/security-sign.yml
+    with:
+      image-name: orders-api
+      context: src/legacy-orders-api
+      dockerfile: src/legacy-orders-api/Dockerfile
+
+  deploy:
+    name: Build image and deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    needs: build-test
+    # Only on a real push to main, and only once the Azure lab variables exist.
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_CLIENT_ID != '' }}
+    environment: lab
+    permissions:
+      contents: read
+      id-token: write # required for the OIDC token used by azure/login
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Azure login (OIDC, no stored secret)
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push image with az acr build
+        env:
+          ACR_NAME: ${{ vars.ACR_NAME }}
+        run: >-
+          az acr build
+          --registry "${ACR_NAME}"
+          --image "${IMAGE_REPOSITORY}:${GITHUB_SHA}"
+          --image "${IMAGE_REPOSITORY}:latest"
+          --file "${SOLUTION_DIR}/Dockerfile"
+          "${SOLUTION_DIR}"
+
+      - name: Deploy to Azure Container Apps
+        env:
+          ACR_NAME: ${{ vars.ACR_NAME }}
+          ACA_NAME: ${{ vars.ACA_NAME }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+        run: >-
+          az containerapp update
+          --name "${ACA_NAME}"
+          --resource-group "${AZURE_RESOURCE_GROUP}"
+          --image "${ACR_NAME}.azurecr.io/${IMAGE_REPOSITORY}:${GITHUB_SHA}"

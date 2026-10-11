@@ -1,0 +1,51 @@
+# GitHub Code Security — Dependency Review (Challenge 03, Secure SDLC).
+#
+# Blocks pull requests that introduce vulnerable or non-permissively-licensed
+# dependencies, *before* they merge. Complements Dependabot (which fixes what is already
+# on the default branch) by gating the incoming diff. Requires the Dependency graph to be
+# enabled (Settings → Code security).
+name: security-dependency-review
+
+on:
+  pull_request:
+    branches: ["main", "nikomix-module-b-training-lab"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-dependency-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the dependency manifests in the diff
+      pull-requests: write # post the review summary comment
+    steps:
+      - name: Harden the runner (audit egress)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          # "Zero known vulns" contract — fail on anything low or above.
+          fail-on-severity: low
+          comment-summary-in-pr: on-failure
+          # License governance — permissive families only (MIT / Apache / BSD / PSF / ISC).
+          # See .github/copilot-instructions.md and security/threat-model.md.
+          allow-licenses: >-
+            0BSD, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, MIT,
+            Python-2.0, PSF-2.0, Unlicense
+          # Packages whose license the advisory DB cannot determine still need a human
+          # look — exempt specific, vetted ones here by purl, e.g.:
+          # allow-dependencies-licenses: "pkg:nuget/Some.Internal.Package"

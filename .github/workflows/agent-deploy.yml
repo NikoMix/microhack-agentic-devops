@@ -1,0 +1,86 @@
+name: Agent · deploy
+
+# Build, push and deploy the Order Support agent + Orders MCP server to Azure
+# Container Apps. Keyless: GitHub OIDC -> Entra federated identity; keyless ACR
+# auth via `az acr login`. NO secrets — every identifier is a repo/environment
+# Variable (vars.*). Targets infrastructure owned by Workstream B (issue #5);
+# the names below must match its outputs (see coach-notes for the contract).
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to build & deploy (defaults to the commit SHA)."
+        required: false
+        type: string
+  push:
+    branches: ["main"]
+    paths:
+      - "src/order-support-agent/**"
+      - "mcp/**"
+      - ".github/workflows/agent-deploy.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: agent-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy · ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    environment: lab
+    env:
+      DOCKER_BUILDKIT: "1"
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - name: agent
+            context: src/order-support-agent
+            repository: order-support-agent
+            app_var: AGENT_CONTAINERAPP
+          - name: mcp
+            context: mcp/contoso-orders-mcp
+            repository: contoso-orders-mcp
+            app_var: MCP_CONTAINERAPP
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Azure login (OIDC, keyless)
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Registry login (keyless, AAD)
+        env:
+          ACR: ${{ vars.ACR_NAME }}
+        run: az acr login --name "$ACR"
+
+      - name: Build and push image
+        env:
+          IMAGE: ${{ vars.ACR_NAME }}.azurecr.io/${{ matrix.repository }}
+          TAG: ${{ inputs.image_tag || github.sha }}
+        run: |
+          docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" "${{ matrix.context }}"
+          docker push "$IMAGE:$TAG"
+          docker push "$IMAGE:latest"
+
+      - name: Deploy to Container Apps
+        env:
+          IMAGE: ${{ vars.ACR_NAME }}.azurecr.io/${{ matrix.repository }}
+          TAG: ${{ inputs.image_tag || github.sha }}
+          APP: ${{ vars[matrix.app_var] }}
+          RG: ${{ vars.AZURE_RESOURCE_GROUP }}
+        run: |
+          az containerapp update \
+            --name "$APP" \
+            --resource-group "$RG" \
+            --image "$IMAGE:$TAG" \
+            --only-show-errors

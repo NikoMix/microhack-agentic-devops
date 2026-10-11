@@ -1,0 +1,118 @@
+name: Agent · build
+
+# Lint, type-check, test and audit the Order Support agent + Orders MCP server,
+# then verify both container images build. No cloud access — see agent-deploy.yml.
+
+on:
+  push:
+    branches: ["main", "nikomix-module-b-training-lab"]
+    paths:
+      - "src/order-support-agent/**"
+      - "mcp/**"
+      - ".github/workflows/agent-build.yml"
+  pull_request:
+    paths:
+      - "src/order-support-agent/**"
+      - "mcp/**"
+      - ".github/workflows/agent-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality · ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: agent
+            path: src/order-support-agent
+          - name: mcp
+            path: mcp/contoso-orders-mcp
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          version: "0.11.21"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "${{ matrix.path }}/uv.lock"
+
+      - name: Sync (frozen)
+        working-directory: ${{ matrix.path }}
+        run: uv sync --frozen
+
+      - name: Ruff lint
+        working-directory: ${{ matrix.path }}
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        working-directory: ${{ matrix.path }}
+        run: uv run ruff format --check .
+
+      - name: Type-check (mypy --strict)
+        working-directory: ${{ matrix.path }}
+        run: uv run mypy .
+
+      - name: Tests
+        working-directory: ${{ matrix.path }}
+        run: uv run pytest
+
+      - name: Audit dependencies (pip-audit)
+        working-directory: ${{ matrix.path }}
+        run: uv run pip-audit
+
+  images:
+    name: Image · ${{ matrix.name }}
+    needs: quality
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: agent
+            context: src/order-support-agent
+          - name: mcp
+            context: mcp/contoso-orders-mcp
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Build image (no push)
+        run: docker build -t "${{ matrix.name }}:ci" "${{ matrix.context }}"
+
+  sign:
+    name: Sign & attest · ${{ matrix.name }}
+    needs: quality
+    # Challenge 03 supply-chain capability via Workstream D's reusable workflow:
+    # build -> push to GHCR -> cosign keyless-sign -> SBOM (SPDX) + SLSA provenance.
+    # Runs on merge to main and manual dispatch (fork PRs cannot push to GHCR).
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    permissions:
+      contents: read # checkout
+      packages: write # push image + attestations to GHCR
+      id-token: write # cosign keyless signing (Sigstore OIDC)
+      attestations: write # build-provenance attestation
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: order-support-agent
+            context: src/order-support-agent
+          - name: contoso-orders-mcp
+            context: mcp/contoso-orders-mcp
+    uses: ./.github/workflows/security-sign.yml
+    with:
+      image-name: ${{ matrix.name }}
+      context: ${{ matrix.context }}
+      dockerfile: ${{ matrix.context }}/Dockerfile

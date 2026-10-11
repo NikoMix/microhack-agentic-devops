@@ -1,0 +1,107 @@
+# =============================================================================
+# Captured Azure DevOps pipeline — Contoso Orders API
+# =============================================================================
+# This file is part of the *bundled sample ADO export*. It is a frozen snapshot
+# of the pipeline that shipped the Orders API from Azure DevOps, so attendees
+# without their own source organization can still practice the
+# Pipelines -> Actions translation in Challenge 01.
+#
+# The authoritative, maintained copy lives at
+# src/legacy-orders-api/azure-pipelines.yml. Translate this into a GitHub
+# Actions workflow and compare against the reference answer key at
+# .github/workflows/orders-api-ci.yml (mapping: migration/pipelines-to-actions.md).
+# =============================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/legacy-orders-api/*
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+  workingDirectory: src/legacy-orders-api
+  dotnetVersion: 10.0.x
+  # Stored credentials, configured in the pipeline UI / variable group:
+  #   dockerRegistryServiceConnection -> ACR service connection
+  #   azureServiceConnection          -> ARM service connection (service principal)
+  containerRegistry: crccmhlab.azurecr.io
+  imageRepository: contoso/orders-api
+  containerAppName: ca-ccmh-orders-api
+  resourceGroup: rg-ccmh-lab
+
+stages:
+  - stage: Build
+    displayName: Build, test, and publish
+    jobs:
+      - job: build
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: $(dotnetVersion)
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: restore
+              projects: $(workingDirectory)/Contoso.Orders.slnx
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: build
+              projects: $(workingDirectory)/Contoso.Orders.slnx
+              arguments: --configuration $(buildConfiguration) --no-restore -warnaserror
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: test
+              projects: $(workingDirectory)/tests/**/*.csproj
+              arguments: --configuration $(buildConfiguration) --no-build
+              publishTestResults: true
+
+  - stage: Package
+    displayName: Build and push container image
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: docker
+        steps:
+          - task: Docker@2
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(workingDirectory)/Dockerfile
+              buildContext: $(workingDirectory)
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(Build.BuildId)
+                latest
+
+  - stage: Deploy
+    displayName: Deploy to Azure Container Apps
+    dependsOn: Package
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: deploy
+        environment: ccmh-lab
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: $(azureServiceConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: >-
+                      az containerapp update
+                      --name $(containerAppName)
+                      --resource-group $(resourceGroup)
+                      --image $(containerRegistry)/$(imageRepository):$(Build.BuildId)

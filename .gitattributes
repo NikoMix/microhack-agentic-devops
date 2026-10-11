@@ -1,0 +1,27 @@
+# Normalize line endings across platforms.
+* text=auto eol=lf
+
+# Scripts that MUST be LF to run on Linux/macOS/Codespaces.
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Windows-only scripts stay CRLF.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Treat common binaries as binary (no EOL munging, no diff noise).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+
+# Language-aware diffs.
+*.cs text diff=csharp
+*.md text diff=markdown
