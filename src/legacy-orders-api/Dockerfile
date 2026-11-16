@@ -10,7 +10,7 @@
 # Build context is the solution root (src/legacy-orders-api) so Central Package Management
 # files (Directory.*.props) and global.json are available to the restore.
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 
 # Restore first, using only the manifest files, so the restore layer is cached until a
